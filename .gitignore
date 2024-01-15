@@ -1,0 +1,14 @@
+*tmp*
+*.log
+/.idea
+/.vagrant
+/*.tar
+/*.tar.gz
+/*.wsl
+/config/apache/*.conf
+/documents
+/projects
+/settings.yaml
+/settings.windows.yaml
+/settings.darwin.yaml
+/settings.linux.yaml

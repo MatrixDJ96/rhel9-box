@@ -1,0 +1,14 @@
+rhel9-box
+Copyright 2022-2026 Mattia Rombi
+
+This product is licensed under the Apache License, Version 2.0.
+
+This product bundles the following third-party components:
+
+- keycloak-bcrypt (BCrypt password provider for Keycloak)
+  https://github.com/leroyguillaume/keycloak-bcrypt
+  Licensed under the Apache License, Version 2.0.
+  File: config/keycloak/keycloak-bcrypt-1.6.0.jar
+  Bundles at.favre.lib:bcrypt and at.favre.lib:bytes (Apache License 2.0):
+    https://github.com/patrickfav/bcrypt
+    https://github.com/patrickfav/bytes-java
