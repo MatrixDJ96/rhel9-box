@@ -1,0 +1,24 @@
+#synced_folder:
+#    map: ~/Projects/PHP                    # Shared host folder path (https://developer.hashicorp.com/vagrant/docs/synced-folders/basic_usage)
+#    type: "nfs"                            # Folder sharing type (https://developer.hashicorp.com/vagrant/docs/synced-folders/basic_usage#type)
+#    opts:                                  # Extra options for the sharing type (https://developer.hashicorp.com/vagrant/docs/synced-folders/basic_usage#options)
+#        nfs_version: 4
+#        nfs_udp: false
+
+#forwarded_ports:                           # Forward ports to the host machine (https://developer.hashicorp.com/vagrant/docs/networking/forwarded_ports)
+#    ftp: 2221
+#    ssh: 2222
+#    http: 80
+#    https: 443
+#    mysql: 3306
+
+#vm:                                        # Virtual machine settings (https://developer.hashicorp.com/vagrant/docs/vagrantfile/machine_settings)
+#    gui: false                             # Show the GUI on vagrant up/reload
+#    cpus: 2                                # Number of CPUs for the VM
+#    memory: 4096                           # Amount of RAM (MB) for the VM
+#    name: ""                               # VM name (VirtualBox only)
+
+#ssh:                                       # Extra SSH settings (https://developer.hashicorp.com/vagrant/docs/vagrantfile/ssh_settings)
+#    insert_key: true                       # Insert Vagrant's default key
+#    forward_agent: true                    # Forward the SSH agent on connect
+#    private_key_path: "~/.ssh/id_vagrant"  # Custom private key for SSH
