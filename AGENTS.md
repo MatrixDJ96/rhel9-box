@@ -16,6 +16,7 @@ Run the check lines after every edit: the repository has no test suite.
 ## Conventions
 
 - A new provisioning step is a script in `config/provision/` that `config/provision.sh` calls.
+- `MYSQL_VERSION` (default `8.4`) picks the series; `mysql.sh` exits 1 if the server differs.
 
 ## Gotchas
 

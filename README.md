@@ -17,6 +17,7 @@ License
 | Component        | Role                          | Provisioned by                              |
 | ---------------- | ----------------------------- | ------------------------------------------- |
 | Apache (httpd)   | HTTP/HTTPS, name-based vhosts | `provision/apache.sh`                       |
+| MySQL            | Relational database           | `provision/mysql.sh`                        |
 
 ## Develop from source
 
@@ -42,7 +43,8 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
     ├── provision/                # per-service scripts
-    └── apache/                   # name-based virtual host configs
+    ├── apache/                   # name-based virtual host configs
+    └── <service>/                # environment and overrides per service
 ```
 
 ## Virtual hosts
