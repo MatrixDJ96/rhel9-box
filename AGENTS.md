@@ -17,6 +17,11 @@ Run the check lines after every edit: the repository has no test suite.
 
 - A new provisioning step is a script in `config/provision/` that `config/provision.sh` calls.
 
+## Gotchas
+
+- `git add` refuses a new `*.conf` in `config/apache/` and any file named `*tmp*`.
+  `.gitignore` ignores both; add a file the box ships with `git add -f`.
+
 ## Boundaries
 
 - The step scripts install packages and edit system files: never run them on the host.

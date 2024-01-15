@@ -4,12 +4,19 @@ A reproducible **RHEL 9** web development environment, shipped as a Vagrant box.
 service runs inside the box, provisioned from a fixed set of shell scripts so the
 environment is identical across hosts.
 
-Contents: Prerequisites · Develop from source · Repository layout · License
+Contents: Prerequisites · Stack · Develop from source · Repository layout · Virtual hosts ·
+License
 
 ## Prerequisites
 
 - **Vagrant box** — **Vagrant** plus a provider: VirtualBox, libvirt, or
   VMware.
+
+## Stack
+
+| Component        | Role                          | Provisioned by                              |
+| ---------------- | ----------------------------- | ------------------------------------------- |
+| Apache (httpd)   | HTTP/HTTPS, name-based vhosts | `provision/apache.sh`                       |
 
 ## Develop from source
 
@@ -34,8 +41,15 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ├── LICENSE / NOTICE              # Apache License 2.0 and its notice
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
-    └── provision/                # per-service scripts
+    ├── provision/                # per-service scripts
+    └── apache/                   # name-based virtual host configs
 ```
+
+## Virtual hosts
+
+Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
+so a vhost loads only where `/vagrant/config` is this repository's `config/`, as the
+`Vagrantfile` provides it.
 
 ## License
 
