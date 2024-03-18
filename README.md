@@ -18,6 +18,7 @@ License
 | ---------------- | ----------------------------- | ------------------------------------------- |
 | Apache (httpd)   | HTTP/HTTPS, name-based vhosts | `provision/apache.sh`                       |
 | MySQL            | Relational database           | `provision/mysql.sh`                        |
+| PHP + Composer   | Application runtime, Xdebug   | `provision/php.sh`, `provision/composer.sh` |
 
 ## Develop from source
 
@@ -42,7 +43,7 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ├── LICENSE / NOTICE              # Apache License 2.0 and its notice
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
-    ├── provision/                # per-service scripts
+    ├── provision/                # per-service scripts (apache, mysql, php, …)
     ├── apache/                   # name-based virtual host configs
     └── <service>/                # environment and overrides per service
 ```
