@@ -1,0 +1,5 @@
+CATALINA_HOME=/opt/tomcat/latest
+CATALINA_BASE=/opt/tomcat/latest
+CATALINA_OPTS="-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+JAVA_OPTS="-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom"
+JAVA_HOME=
