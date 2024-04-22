@@ -19,6 +19,7 @@ License
 | Apache (httpd)   | HTTP/HTTPS, name-based vhosts | `provision/apache.sh`                       |
 | MySQL            | Relational database           | `provision/mysql.sh`                        |
 | PHP + Composer   | Application runtime, Xdebug   | `provision/php.sh`, `provision/composer.sh` |
+| Node.js (mise)   | Frontend tooling              | `provision/mise.sh`, `provision/nodejs.sh`  |
 
 ## Develop from source
 
