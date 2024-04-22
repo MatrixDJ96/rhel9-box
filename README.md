@@ -20,6 +20,7 @@ License
 | MySQL            | Relational database           | `provision/mysql.sh`                        |
 | PHP + Composer   | Application runtime, Xdebug   | `provision/php.sh`, `provision/composer.sh` |
 | Node.js (mise)   | Frontend tooling              | `provision/mise.sh`, `provision/nodejs.sh`  |
+| Java + Tomcat    | JVM application server        | `provision/java.sh`, `provision/tomcat.sh`  |
 
 ## Develop from source
 
@@ -46,7 +47,7 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
     ├── provision.sh              # orchestrates the per-service provisioning steps
     ├── provision/                # per-service scripts (apache, mysql, php, …)
     ├── apache/                   # name-based virtual host configs
-    └── <service>/                # environment and overrides per service
+    └── <service>/                # systemd units, environment, overrides per service
 ```
 
 ## Virtual hosts
