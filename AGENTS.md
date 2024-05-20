@@ -19,7 +19,7 @@ Run the check lines after every edit: the repository has no test suite.
 - `MYSQL_VERSION` (default `8.4`) picks the series; `mysql.sh` exits 1 if the server differs.
 - PHP versions live in `php_versions` (`php.sh`); `PHP_VERSION=php84` installs one alone.
 - Node.js versions live in `node_versions` (`nodejs.sh`); `NODE_VERSION` installs one alone.
-- The `*_version` variables atop `tomcat.sh` pin the service.
+- The `*_version` variables atop `tomcat.sh` and `keycloak.sh` pin each service.
 
 ## Gotchas
 

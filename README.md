@@ -5,7 +5,7 @@ service runs inside the box, provisioned from a fixed set of shell scripts so th
 environment is identical across hosts.
 
 Contents: Prerequisites · Stack · Develop from source · Repository layout · Virtual hosts ·
-License
+Third-party components · License
 
 ## Prerequisites
 
@@ -21,6 +21,7 @@ License
 | PHP + Composer   | Application runtime, Xdebug   | `provision/php.sh`, `provision/composer.sh` |
 | Node.js (mise)   | Frontend tooling              | `provision/mise.sh`, `provision/nodejs.sh`  |
 | Java + Tomcat    | JVM application server        | `provision/java.sh`, `provision/tomcat.sh`  |
+| Keycloak         | Identity / SSO (BCrypt SPI)   | `provision/keycloak.sh`                     |
 
 ## Develop from source
 
@@ -42,7 +43,7 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 .
 ├── Vagrantfile
 ├── settings.yaml.example
-├── LICENSE / NOTICE              # Apache License 2.0 and its notice
+├── LICENSE / NOTICE              # Apache License 2.0, bundled keycloak-bcrypt notice
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
     ├── provision/                # per-service scripts (apache, mysql, php, …)
@@ -55,6 +56,13 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
 so a vhost loads only where `/vagrant/config` is this repository's `config/`, as the
 `Vagrantfile` provides it.
+
+## Third-party components
+
+`config/keycloak/keycloak-bcrypt-1.6.0.jar` — BCrypt password provider for
+Keycloak ([leroyguillaume/keycloak-bcrypt](https://github.com/leroyguillaume/keycloak-bcrypt),
+Apache-2.0), bundling `at.favre.lib:bcrypt` and `at.favre.lib:bytes`. See
+`NOTICE`.
 
 ## License
 
