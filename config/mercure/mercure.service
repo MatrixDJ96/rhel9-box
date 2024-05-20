@@ -1,0 +1,15 @@
+[Unit]
+Description=Mercure - Server-sent live updates
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/mercure run --config /etc/mercure/dev.Caddyfile
+ExecReload=/usr/bin/mercure reload --config /etc/mercure/dev.Caddyfile
+EnvironmentFile=-/etc/sysconfig/mercure
+Restart=on-failure
+User=mercure
+Group=mercure
+RuntimeDirectory=mercure
+
+[Install]
+WantedBy=multi-user.target

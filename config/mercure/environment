@@ -1,0 +1,9 @@
+XDG_DATA_HOME=/var/lib/mercure
+XDG_CONFIG_HOME=/var/lib/mercure
+
+SERVER_NAME=:3020
+GLOBAL_OPTIONS="debug http_port 3020 auto_https off"
+MERCURE_EXTRA_DIRECTIVES="transport_url bolt:///var/lib/mercure/mercure.db"
+
+MERCURE_PUBLISHER_JWT_KEY=!ChangeThisMercureHubJWTSecretKey!
+MERCURE_SUBSCRIBER_JWT_KEY=!ChangeThisMercureHubJWTSecretKey!
