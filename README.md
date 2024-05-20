@@ -22,6 +22,7 @@ Third-party components · License
 | Node.js (mise)   | Frontend tooling              | `provision/mise.sh`, `provision/nodejs.sh`  |
 | Java + Tomcat    | JVM application server        | `provision/java.sh`, `provision/tomcat.sh`  |
 | Keycloak         | Identity / SSO (BCrypt SPI)   | `provision/keycloak.sh`                     |
+| Mercure          | SSE / real-time hub           | `provision/mercure.sh`                      |
 
 ## Develop from source
 
@@ -56,6 +57,12 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
 so a vhost loads only where `/vagrant/config` is this repository's `config/`, as the
 `Vagrantfile` provides it.
+
+The tracked confs are the box's own: `000-default.conf` serves `/var/www`, the `001-*.conf`
+confs proxy Keycloak, Mercure and Tomcat (`keycloak.local`, `mercure.local`, `tomcat.local`),
+and `999-custom.conf` holds the proxy settings. A project's vhost is added by the box's user as
+a conf in `config/apache/` pointing into `/vagrant/projects`; git ignores it
+(`/config/apache/*.conf` in `.gitignore`).
 
 ## Third-party components
 
