@@ -1,0 +1,27 @@
+# Build needs ./config (Dockerfile bind-mount) — keep config/ in the context.
+
+.git
+.github
+.gitattributes
+.gitignore
+
+.vagrant
+Vagrantfile
+
+*.tar
+*.tar.gz
+*.wsl
+*.log
+*tmp*
+
+settings*.yaml
+/projects
+/documents
+/.idea
+
+*.sh
+*.bat
+
+*.md
+LICENSE
+NOTICE
