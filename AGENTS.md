@@ -1,7 +1,7 @@
 # rhel9-box — a RHEL 9 web development environment
 
 `config/provision.sh` runs the step scripts in `config/provision/` as root, inside the target.
-Target: a Vagrant box (`Vagrantfile`).
+Targets: Vagrant box (`Vagrantfile`), systemd image (`Dockerfile`).
 The step scripts read the repository's `config/` at `/vagrant/config` in every target.
 
 ## Build & run
@@ -9,6 +9,8 @@ The step scripts read the repository's `config/` at `/vagrant/config` in every t
 ```bash
 git ls-files -z '*.sh' | xargs -0 -n1 bash -n            # syntax-check every shell script
 git ls-files -z '*.sh' | xargs -0 shellcheck -S error    # shellcheck, errors only
+./build.sh                                               # build local/rhel9-init from source
+./run.sh                                                 # start the rhel9 container
 ```
 
 Run the check lines after every edit: the repository has no test suite.
@@ -25,8 +27,14 @@ Run the check lines after every edit: the repository has no test suite.
 
 - `git add` refuses a new `*.conf` in `config/apache/` and any file named `*tmp*`.
   `.gitignore` ignores both; add a file the box ships with `git add -f`.
+- `./build.sh` asks `Do you want to skip build? [y/N]` and builds on any answer but `y` or `Y`.
+  A closed input builds too; a non-empty `SKIP_BUILD` skips the build without asking.
 
 ## Boundaries
 
 - The step scripts install packages and edit system files: never run them on the host.
   The first `vagrant up`, or `vagrant provision`, runs them inside the box.
+- `run.sh`, `init.sh` and `export.sh` remove any existing container named `rhel9`.
+  Check `podman ps -a` first; `ENGINE=echo ./run.sh` prints the `run` command instead.
+- `push.sh` publishes `local/rhel9-init` as `docker.io/matrixdj96/rhel9-init:latest`.
+  Ask the owner before running it; `./build.sh` alone builds without publishing.

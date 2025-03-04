@@ -1,16 +1,47 @@
 # rhel9-box
 
-A reproducible **RHEL 9** web development environment, shipped as a Vagrant box. Every
-service runs inside the box, provisioned from a fixed set of shell scripts so the
+[![Docker Hub](https://img.shields.io/docker/v/matrixdj96/rhel9-init?label=docker%20hub&sort=date)](https://hub.docker.com/r/matrixdj96/rhel9-init)
+
+A reproducible **RHEL 9 (UBI 9)** web development environment, shipped as a
+single systemd-enabled image. One container behaves like a full machine: every
+service runs inside it, provisioned from a fixed set of shell scripts so the
 environment is identical across hosts.
 
-Contents: Prerequisites · Stack · Develop from source · Repository layout · Virtual hosts ·
-Third-party components · License
+Contents: Prerequisites · Quick start · Architecture · Stack · Develop from source · Repository
+layout · Virtual hosts · Build and publish · Troubleshooting · Third-party components · License
 
 ## Prerequisites
 
+Pick the target you want; each has its own requirements.
+
+- **Container (Linux / macOS)** — **Podman** (preferred) or **Docker** on a
+  cgroup v2 host. Podman runs the systemd image natively; Docker needs a few
+  extra flags, which `run.sh` applies.
 - **Vagrant box** — **Vagrant** plus a provider: VirtualBox, libvirt, or
   VMware.
+
+## Quick start
+
+From a clone of this repository, the convenience flow on Linux / macOS:
+
+```bash
+./init.sh   # pull the published image, start the container, set up hosts + SSH
+```
+
+See [Develop from source](#develop-from-source) for the full workflows and
+their caveats.
+
+## Architecture
+
+The image is built from `redhat/ubi9-init` and runs `/usr/sbin/init` (systemd)
+as PID 1, with non-essential units masked for container use. `config/provision.sh`
+orchestrates the per-service scripts under `config/provision/`. The same
+provisioning produces two delivery targets:
+
+| Target       | Artifact                         | Registry / output                 |
+| ------------ | -------------------------------- | --------------------------------- |
+| Docker image | systemd monolith                 | `docker.io/matrixdj96/rhel9-init` |
+| Vagrant box  | VirtualBox / libvirt / VMware    | local provider                    |
 
 ## Stack
 
@@ -25,6 +56,20 @@ Third-party components · License
 | Mercure          | SSE / real-time hub           | `provision/mercure.sh`                      |
 
 ## Develop from source
+
+Clone this repository, then use one of the workflows below. Every host-side
+shell script **auto-detects the engine** through `config/extra/engine.sh`
+(prefers Podman; set `ENGINE=docker` to force Docker), and `run.sh` applies the
+right systemd flags for each. `run.sh` runs the image tagged `local/rhel9-init`,
+which must already exist locally — `pull.sh`/`init.sh` produce it by pulling and
+tagging the published image, and `build.sh` produces it by building from source.
+
+### Local container — Linux / macOS
+
+```bash
+./init.sh                 # pull the published image, start the container, set up hosts + SSH
+ENGINE=docker ./init.sh   # force Docker instead of Podman
+```
 
 ### Vagrant
 
@@ -42,12 +87,22 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 
 ```text
 .
+├── run.sh                        # start the container (engine-aware)
+├── init.sh                       # full local convenience flow
+├── pull.sh                       # pull + tag the published image as local/rhel9-init
+├── build.sh                      # build the image from source
+├── push.sh                       # build then push to the registry
+├── export.sh                     # export the image (e.g. WSL tarball)
+├── install_virtualhosts.sh       # map vhost ServerNames into the host hosts file
+├── install_ssh_key.sh            # generate + install the SSH key
+├── Dockerfile                    # FROM redhat/ubi9-init, systemd PID 1
 ├── Vagrantfile
 ├── settings.yaml.example
 ├── LICENSE / NOTICE              # Apache License 2.0, bundled keycloak-bcrypt notice
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
     ├── provision/                # per-service scripts (apache, mysql, php, …)
+    ├── extra/env_toolkit.sh      # build / export / pull / push / WSL toolkit
     ├── apache/                   # name-based virtual host configs
     └── <service>/                # systemd units, environment, overrides per service
 ```
@@ -55,14 +110,38 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ## Virtual hosts
 
 Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
-so a vhost loads only where `/vagrant/config` is this repository's `config/`, as the
-`Vagrantfile` provides it.
+so a vhost loads only where `/vagrant/config` is this repository's `config/`. `run.sh` and the
+`Vagrantfile` provide it; the `Dockerfile` mounts it at build time only, so
+the published image needs `-v <path>/config:/vagrant/config` with `<path>` a clone of this
+repository.
 
 The tracked confs are the box's own: `000-default.conf` serves `/var/www`, the `001-*.conf`
 confs proxy Keycloak, Mercure and Tomcat (`keycloak.local`, `mercure.local`, `tomcat.local`),
 and `999-custom.conf` holds the proxy settings. A project's vhost is added by the box's user as
 a conf in `config/apache/` pointing into `/vagrant/projects`; git ignores it
-(`/config/apache/*.conf` in `.gitignore`).
+(`/config/apache/*.conf` in `.gitignore`). The `install_virtualhosts.sh` script maps
+each `ServerName` into the host `hosts` file.
+
+## Build and publish
+
+```bash
+./build.sh   # build the monolith image locally (interactive)
+./push.sh    # build, then push to docker.io/matrixdj96/rhel9-init
+```
+
+`build.sh` asks `Do you want to skip build? [y/N]` and builds on any answer but `y`
+or `Y`, end of input included; a non-empty `SKIP_BUILD` skips the build without
+asking. `push.sh` runs `build.sh` first, prompt included, and then pushes.
+
+`config/extra/env_toolkit.sh` is the underlying build/export/pull/push
+orchestrator (Docker and WSL flows).
+
+## Troubleshooting
+
+- **Docker on a cgroup v2 host** — the image runs systemd as PID 1, so Docker
+  needs extra flags
+  (Podman provides these natively). `run.sh` applies them automatically when the
+  engine is Docker.
 
 ## Third-party components
 
