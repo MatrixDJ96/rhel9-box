@@ -34,6 +34,8 @@ podman run -d --name rhel9 \
   docker.io/matrixdj96/rhel9-init:latest
 ```
 
+For the Docker command and more detail, see **[DOCKERHUB.md](DOCKERHUB.md)**.
+
 Or, from a clone of this repository, the convenience flow on Linux / macOS:
 
 ```bash
@@ -69,6 +71,9 @@ provisioning produces three delivery targets:
 | Mercure          | SSE / real-time hub           | `provision/mercure.sh`      |
 
 ## Run the published image
+
+To just pull and run the image (Podman or Docker), see **[DOCKERHUB.md](DOCKERHUB.md)**
+— it has the exact `run` commands for both engines.
 
 The image runs systemd as PID 1: **Podman** runs it natively, **Docker** (on a
 cgroup v2 host) additionally needs `--cgroupns=host -v
@@ -190,7 +195,15 @@ in the environment, so set `SKIP_BUILD=1` to run it non-interactively. `push.sh`
 runs `build.sh` first and then pushes, so it rebuilds before publishing.
 
 `config/extra/env_toolkit.sh` is the underlying build/export/pull/push
-orchestrator (Docker and WSL flows).
+orchestrator (Docker and WSL flows). The published image is also built by CI
+(see `.github/workflows/docker.yml`):
+
+- on pushes to `master` that touch image inputs (doc- and script-only changes
+  are excluded via `paths-ignore`),
+- on a weekly schedule (Monday 04:00 UTC),
+- on manual `workflow_dispatch`.
+
+Builds are tagged `latest` and `YYYYMMDD-<short-sha>`.
 
 ## Troubleshooting
 
@@ -201,7 +214,8 @@ orchestrator (Docker and WSL flows).
 
 - **`systemctl is-system-running` reports `degraded`** — on Docker this is
   expected and harmless: `upower.service` (power management) cannot start
-  without extra privileges. All web services run normally.
+  without extra privileges. All web services run normally. See the note in
+  [DOCKERHUB.md](DOCKERHUB.md).
 
 - **`./init.sh` fails after starting the container on a Podman-only host** —
   the hosts/SSH helpers (`install_virtualhosts.sh`, `install_ssh_key.sh`) call
