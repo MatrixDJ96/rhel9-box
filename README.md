@@ -7,9 +7,8 @@ single systemd-enabled image. One container behaves like a full machine: every
 service runs inside it, provisioned from a fixed set of shell scripts so the
 environment is identical across hosts.
 
-Contents: Prerequisites · Quick start · Architecture · Stack · Run the published image ·
-Develop from source · Repository layout · Networking · Persistence · Virtual hosts · Build and
-publish · Troubleshooting · Third-party components · License
+Contents: Prerequisites · Quick start · Architecture · Stack · Develop from source · Repository
+layout · Virtual hosts · Build and publish · Troubleshooting · Third-party components · License
 
 ## Prerequisites
 
@@ -17,7 +16,7 @@ Pick the target you want; each has its own requirements.
 
 - **Container (Linux / macOS)** — **Podman** (preferred) or **Docker** on a
   cgroup v2 host. Podman runs the systemd image natively; Docker needs a few
-  extra flags (see [Run the published image](#run-the-published-image)).
+  extra flags (see `DOCKERHUB.md`).
 - **WSL2 distro (Windows)** — Windows with **WSL2** enabled. First-time setup
   installs an Ubuntu WSL distro and a container engine via `prepare.bat`.
 - **Vagrant box** — **Vagrant** plus a provider: VirtualBox, libvirt, or
@@ -25,21 +24,10 @@ Pick the target you want; each has its own requirements.
 
 ## Quick start
 
-Pull and run the published image with Podman:
+[DOCKERHUB.md](DOCKERHUB.md) covers the published image on its own: the Podman and Docker
+`run` commands, ports, persistence mounts and the `degraded` state on Docker.
 
-```bash
-podman run -d --name rhel9 \
-  --hostname vagrant.local \
-  --security-opt label=disable \
-  -v ~/.rhel9/home:/root \
-  -v ~/.rhel9/mysql:/var/lib/mysql \
-  -v ~/.rhel9/projects:/vagrant/projects \
-  -v <path>/config:/vagrant/config \
-  -p 80:80 -p 443:443 -p 2222:2222 -p 3306:3306 \
-  docker.io/matrixdj96/rhel9-init:latest
-```
-
-Or, from a clone of this repository, the convenience flow on Linux / macOS:
+From a clone of this repository, the convenience flow on Linux / macOS:
 
 ```bash
 ./init.sh   # pull the published image, start the container, set up hosts + SSH
@@ -72,12 +60,6 @@ provisioning produces three delivery targets:
 | Java + Tomcat    | JVM application server        | `provision/java.sh`, `provision/tomcat.sh`  |
 | Keycloak         | Identity / SSO (BCrypt SPI)   | `provision/keycloak.sh`                     |
 | Mercure          | SSE / real-time hub           | `provision/mercure.sh`                      |
-
-## Run the published image
-
-The image runs systemd as PID 1: **Podman** runs it natively, **Docker** (on a
-cgroup v2 host) additionally needs `--cgroupns=host -v
-/sys/fs/cgroup:/sys/fs/cgroup:rw --tmpfs /run --tmpfs /run/lock --tmpfs /tmp`.
 
 ## Develop from source
 
@@ -156,34 +138,13 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
     └── <service>/               # systemd units, environment, overrides per service
 ```
 
-## Networking
-
-Hostname: `vagrant.local`. Exposed ports:
-
-| Port | Service |
-| ---- | ------- |
-| 80   | HTTP    |
-| 443  | HTTPS   |
-| 2222 | SSH     |
-| 3306 | MySQL   |
-
-## Persistence
-
-Bind mounts under `~/.rhel9/` on the host:
-
-```
-~/.rhel9/home      -> /root
-~/.rhel9/mysql     -> /var/lib/mysql
-~/.rhel9/projects  -> /vagrant/projects
-```
-
 ## Virtual hosts
 
 Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
 so a vhost loads only where `/vagrant/config` is this repository's `config/`. `run.sh`, the
 `Vagrantfile` and the WSL2 setup provide it; the `Dockerfile` mounts it at build time only, so
 the published image needs `-v <path>/config:/vagrant/config` with `<path>` a clone of this
-repository (the Quick start `run` command carries it).
+repository (the `run` commands in `DOCKERHUB.md` carry it).
 
 The tracked confs are the box's own: `000-default.conf` serves `/var/www`, the `001-*.conf`
 confs proxy Keycloak, Mercure and Tomcat (`keycloak.local`, `mercure.local`, `tomcat.local`),
@@ -204,18 +165,22 @@ in the environment, so set `SKIP_BUILD=1` to run it non-interactively. `push.sh`
 runs `build.sh` first and then pushes, so it rebuilds before publishing.
 
 `config/extra/env_toolkit.sh` is the underlying build/export/pull/push
-orchestrator (Docker and WSL flows).
+orchestrator (Docker and WSL flows). The published image is also built by CI
+(see `.github/workflows/docker.yml`):
+
+- on pushes to `master` that touch image inputs (doc- and script-only changes
+  are excluded via `paths-ignore`),
+- on a weekly schedule (Monday 04:00 UTC),
+- on manual `workflow_dispatch`.
+
+Builds are tagged `latest` and `YYYYMMDD-<short-sha>`.
 
 ## Troubleshooting
 
 - **Docker on a cgroup v2 host** — the image runs systemd as PID 1, so Docker
-  needs the extra flags listed in [Run the published image](#run-the-published-image)
+  needs the extra flags the Docker command in `DOCKERHUB.md` carries
   (Podman provides these natively). `run.sh` applies them automatically when the
   engine is Docker.
-
-- **`systemctl is-system-running` reports `degraded`** — on Docker this is
-  expected and harmless: `upower.service` (power management) cannot start
-  without extra privileges. All web services run normally.
 
 - **`./init.sh` fails after starting the container on a Podman-only host** —
   the hosts/SSH helpers (`install_virtualhosts.sh`, `install_ssh_key.sh`) call
