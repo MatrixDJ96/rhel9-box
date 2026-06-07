@@ -9,6 +9,8 @@ The step scripts read the repository's `config/` at `/vagrant/config` in every t
 ```bash
 git ls-files -z '*.sh' | xargs -0 -n1 bash -n            # syntax-check every shell script
 git ls-files -z '*.sh' | xargs -0 shellcheck -S error    # shellcheck, errors only
+# lint the CI workflow
+podman run --rm -v "$PWD":/repo:ro,z -w /repo docker.io/rhysd/actionlint:latest
 ./build.sh                                               # build local/rhel9-init from source
 ./run.sh                                                 # start the rhel9 container
 ```
@@ -41,3 +43,5 @@ Run the check lines after every edit: the repository has no test suite.
   Ask the owner before running it; `./build.sh` alone builds without publishing.
 - `import.bat` and `init.bat` unregister the WSL distro `RHEL9`, deleting its filesystem.
   Its `/vagrant/projects` goes with it: ask the owner before running either on a set-up host.
+- A push to `master` touching a path outside the workflow's `paths-ignore` publishes `latest`.
+  Ask the owner before pushing; commits stay local until then.

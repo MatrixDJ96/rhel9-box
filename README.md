@@ -16,13 +16,16 @@ Pick the target you want; each has its own requirements.
 
 - **Container (Linux / macOS)** — **Podman** (preferred) or **Docker** on a
   cgroup v2 host. Podman runs the systemd image natively; Docker needs a few
-  extra flags, which `run.sh` applies.
+  extra flags (see `DOCKERHUB.md`).
 - **WSL2 distro (Windows)** — Windows with **WSL2** enabled. First-time setup
   installs an Ubuntu WSL distro and a container engine via `prepare.bat`.
 - **Vagrant box** — **Vagrant** plus a provider: VirtualBox, libvirt, or
   VMware.
 
 ## Quick start
+
+[DOCKERHUB.md](DOCKERHUB.md) covers the published image on its own: the Podman and Docker
+`run` commands, ports, persistence mounts and the `degraded` state on Docker.
 
 From a clone of this repository, the convenience flow on Linux / macOS:
 
@@ -121,7 +124,9 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ├── Dockerfile                    # FROM redhat/ubi9-init, systemd PID 1
 ├── Vagrantfile
 ├── settings.yaml.example
+├── DOCKERHUB.md                  # the published image's own guide (run, ports, persistence)
 ├── LICENSE / NOTICE              # Apache License 2.0, bundled keycloak-bcrypt notice
+├── .github/workflows/docker.yml  # CI: build and push docker.io/matrixdj96/rhel9-init
 └── config/
     ├── provision.sh              # orchestrates the per-service provisioning steps
     ├── provision/                # per-service scripts (apache, mysql, php, …)
@@ -136,7 +141,7 @@ Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/ap
 so a vhost loads only where `/vagrant/config` is this repository's `config/`. `run.sh`, the
 `Vagrantfile` and the WSL2 setup provide it; the `Dockerfile` mounts it at build time only, so
 the published image needs `-v <path>/config:/vagrant/config` with `<path>` a clone of this
-repository.
+repository (the `run` commands in `DOCKERHUB.md` carry it).
 
 The tracked confs are the box's own: `000-default.conf` serves `/var/www`, the `001-*.conf`
 confs proxy Keycloak, Mercure and Tomcat (`keycloak.local`, `mercure.local`, `tomcat.local`),
@@ -157,12 +162,21 @@ or `Y`, end of input included; a non-empty `SKIP_BUILD` skips the build without
 asking. `push.sh` runs `build.sh` first, prompt included, and then pushes.
 
 `config/extra/env_toolkit.sh` is the underlying build/export/pull/push
-orchestrator (Docker and WSL flows).
+orchestrator (Docker and WSL flows). The published image is also built by CI
+(see `.github/workflows/docker.yml`):
+
+- on pushes to `master` that touch image inputs (a push changing only Markdown, root-level
+  `*.sh` or `*.bat` files, `Vagrantfile`, `settings.yaml.example`, `LICENSE` or `NOTICE`
+  is excluded via `paths-ignore`),
+- on a weekly schedule (Monday 04:00 UTC),
+- on manual `workflow_dispatch`.
+
+Builds are tagged `latest` and `YYYYMMDD-<short-sha>`.
 
 ## Troubleshooting
 
 - **Docker on a cgroup v2 host** — the image runs systemd as PID 1, so Docker
-  needs extra flags
+  needs the extra flags the Docker command in `DOCKERHUB.md` carries
   (Podman provides these natively). `run.sh` applies them automatically when the
   engine is Docker.
 
