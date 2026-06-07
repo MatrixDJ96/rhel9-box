@@ -17,6 +17,8 @@ Pick the target you want; each has its own requirements.
 - **Container (Linux / macOS)** — **Podman** (preferred) or **Docker** on a
   cgroup v2 host. Podman runs the systemd image natively; Docker needs a few
   extra flags, which `run.sh` applies.
+- **WSL2 distro (Windows)** — Windows with **WSL2** enabled. First-time setup
+  installs an Ubuntu WSL distro and a container engine via `prepare.bat`.
 - **Vagrant box** — **Vagrant** plus a provider: VirtualBox, libvirt, or
   VMware.
 
@@ -36,11 +38,12 @@ their caveats.
 The image is built from `redhat/ubi9-init` and runs `/usr/sbin/init` (systemd)
 as PID 1, with non-essential units masked for container use. `config/provision.sh`
 orchestrates the per-service scripts under `config/provision/`. The same
-provisioning produces two delivery targets:
+provisioning produces three delivery targets:
 
 | Target       | Artifact                         | Registry / output                 |
 | ------------ | -------------------------------- | --------------------------------- |
 | Docker image | systemd monolith                 | `docker.io/matrixdj96/rhel9-init` |
+| WSL2 distro  | exported root filesystem tarball | `RHEL9.wsl`                       |
 | Vagrant box  | VirtualBox / libvirt / VMware    | local provider                    |
 
 ## Stack
@@ -71,6 +74,23 @@ tagging the published image, and `build.sh` produces it by building from source.
 ENGINE=docker ./init.sh   # force Docker instead of Podman
 ```
 
+### Windows — WSL2
+
+First-time setup on a clean host:
+
+```bat
+prepare.bat
+```
+
+`prepare.bat` installs the Ubuntu WSL distro and the container engine. Then:
+
+```bat
+init.bat
+```
+
+`init.bat` pulls the prebuilt image, exports it as `RHEL9.wsl`, and imports it
+as the WSL distro `RHEL9`. Enter it with `wsl -d RHEL9`.
+
 ### Vagrant
 
 ```bash
@@ -88,13 +108,16 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ```text
 .
 ├── run.sh                        # start the container (engine-aware)
-├── init.sh                       # full local convenience flow
-├── pull.sh                       # pull + tag the published image as local/rhel9-init
-├── build.sh                      # build the image from source
-├── push.sh                       # build then push to the registry
-├── export.sh                     # export the image (e.g. WSL tarball)
-├── install_virtualhosts.sh       # map vhost ServerNames into the host hosts file
-├── install_ssh_key.sh            # generate + install the SSH key
+├── init.sh / init.bat            # full local / WSL2 convenience flow
+├── pull.sh / pull.bat            # pull + tag the published image as local/rhel9-init
+├── build.sh / build.bat          # build the image from source
+├── push.sh / push.bat            # build then push to the registry
+├── export.sh / export.bat        # export the image (e.g. WSL tarball)
+├── import.bat                    # import the WSL distro
+├── install_virtualhosts.{sh,bat} # map vhost ServerNames into the host hosts file
+├── install_ssh_key.{sh,bat}      # generate + install the SSH key
+├── prepare.bat                   # Windows first-time setup (Ubuntu WSL + engine)
+├── update.bat                    # re-provision the imported WSL distro in place
 ├── Dockerfile                    # FROM redhat/ubi9-init, systemd PID 1
 ├── Vagrantfile
 ├── settings.yaml.example
@@ -110,8 +133,8 @@ falls back to `settings.yaml`, so you may use a platform-specific name instead.
 ## Virtual hosts
 
 Apache includes `/vagrant/config/apache/*.conf` at runtime (`config/provision/apache.sh`),
-so a vhost loads only where `/vagrant/config` is this repository's `config/`. `run.sh` and the
-`Vagrantfile` provide it; the `Dockerfile` mounts it at build time only, so
+so a vhost loads only where `/vagrant/config` is this repository's `config/`. `run.sh`, the
+`Vagrantfile` and the WSL2 setup provide it; the `Dockerfile` mounts it at build time only, so
 the published image needs `-v <path>/config:/vagrant/config` with `<path>` a clone of this
 repository.
 
@@ -119,7 +142,7 @@ The tracked confs are the box's own: `000-default.conf` serves `/var/www`, the `
 confs proxy Keycloak, Mercure and Tomcat (`keycloak.local`, `mercure.local`, `tomcat.local`),
 and `999-custom.conf` holds the proxy settings. A project's vhost is added by the box's user as
 a conf in `config/apache/` pointing into `/vagrant/projects`; git ignores it
-(`/config/apache/*.conf` in `.gitignore`). The `install_virtualhosts.sh` script maps
+(`/config/apache/*.conf` in `.gitignore`). The `install_virtualhosts.{sh,bat}` scripts map
 each `ServerName` into the host `hosts` file.
 
 ## Build and publish

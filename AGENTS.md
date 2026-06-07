@@ -1,7 +1,7 @@
 # rhel9-box — a RHEL 9 web development environment
 
 `config/provision.sh` runs the step scripts in `config/provision/` as root, inside the target.
-Targets: Vagrant box (`Vagrantfile`), systemd image (`Dockerfile`).
+Targets: Vagrant box (`Vagrantfile`), systemd image (`Dockerfile`), WSL2 distro (`*.bat`).
 The step scripts read the repository's `config/` at `/vagrant/config` in every target.
 
 ## Build & run
@@ -22,6 +22,7 @@ Run the check lines after every edit: the repository has no test suite.
 - PHP versions live in `php_versions` (`php.sh`); `PHP_VERSION=php84` installs one alone.
 - Node.js versions live in `node_versions` (`nodejs.sh`); `NODE_VERSION` installs one alone.
 - The `*_version` variables atop `tomcat.sh`, `keycloak.sh` and `mercure.sh` pin each service.
+- `config/provision/docker.sh` runs only from `prepare.bat`, on the Ubuntu WSL distro.
 
 ## Gotchas
 
@@ -38,3 +39,5 @@ Run the check lines after every edit: the repository has no test suite.
   Check `podman ps -a` first; `ENGINE=echo ./run.sh` prints the `run` command instead.
 - `push.sh` publishes `local/rhel9-init` as `docker.io/matrixdj96/rhel9-init:latest`.
   Ask the owner before running it; `./build.sh` alone builds without publishing.
+- `import.bat` and `init.bat` unregister the WSL distro `RHEL9`, deleting its filesystem.
+  Its `/vagrant/projects` goes with it: ask the owner before running either on a set-up host.
