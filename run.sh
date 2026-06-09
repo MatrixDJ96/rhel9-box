@@ -2,14 +2,7 @@
 
 cd "$(dirname "$0")"
 
-# Container engine: override with ENGINE=docker|podman, otherwise prefer podman.
-if [ -z "${ENGINE}" ]; then
-  if command -v podman >/dev/null 2>&1; then
-    ENGINE=podman
-  else
-    ENGINE=docker
-  fi
-fi
+source config/extra/engine.sh
 
 echo "Running RHEL9 with ${ENGINE}..."
 
@@ -20,9 +13,9 @@ if [ "${ENGINE}" = "docker" ]; then
   SYSTEMD_ARGS=(
     --cgroupns=host
     -v /sys/fs/cgroup:/sys/fs/cgroup:rw
+    --tmpfs /tmp
     --tmpfs /run
     --tmpfs /run/lock
-    --tmpfs /tmp
   )
 fi
 

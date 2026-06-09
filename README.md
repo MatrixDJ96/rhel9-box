@@ -63,19 +63,12 @@ provisioning produces three delivery targets:
 
 ## Develop from source
 
-Clone this repository, then use one of the workflows below. The local container
-runtime is driven by `run.sh`, which **auto-detects the engine** (prefers
-Podman; set `ENGINE=docker` to force Docker) and applies the right systemd flags
-for each. `run.sh` runs the image tagged `local/rhel9-init`, which must already
-exist locally — `pull.sh`/`init.sh` produce it by pulling and tagging the
-published image, and `build.sh` produces it by building from source.
-
-> The engine auto-detection applies to `run.sh` only. The helper steps run by
-> `init.sh` — `install_virtualhosts.sh` and `install_ssh_key.sh` — call
-> `docker exec rhel9` directly and do **not** honor `ENGINE`, so the full
-> `init.sh` convenience flow assumes the `docker` CLI is available. On a
-> Podman-only host the container starts, but the hosts/SSH steps fail unless a
-> `docker` shim points at Podman (see [Troubleshooting](#troubleshooting)).
+Clone this repository, then use one of the workflows below. Every host-side
+shell script **auto-detects the engine** through `config/extra/engine.sh`
+(prefers Podman; set `ENGINE=docker` to force Docker), and `run.sh` applies the
+right systemd flags for each. `run.sh` runs the image tagged `local/rhel9-init`,
+which must already exist locally — `pull.sh`/`init.sh` produce it by pulling and
+tagging the published image, and `build.sh` produces it by building from source.
 
 ### Local container — Linux / macOS
 
@@ -181,11 +174,6 @@ Builds are tagged `latest` and `YYYYMMDD-<short-sha>`.
   needs the extra flags the Docker command in `DOCKERHUB.md` carries
   (Podman provides these natively). `run.sh` applies them automatically when the
   engine is Docker.
-
-- **`./init.sh` fails after starting the container on a Podman-only host** —
-  the hosts/SSH helpers (`install_virtualhosts.sh`, `install_ssh_key.sh`) call
-  `docker exec rhel9` directly. Provide a `docker` command that points at Podman
-  (e.g. a shim or alias), or run those steps manually, then re-run `init.sh`.
 
 ## Third-party components
 

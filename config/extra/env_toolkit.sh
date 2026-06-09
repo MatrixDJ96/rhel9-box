@@ -8,6 +8,8 @@ if [[ "${1}" = "--root" ]] && [ "$(id -u)" != "0" ]; then
 	exec sudo "$0" "$@"
 fi
 
+source "$(dirname "$0")/engine.sh"
+
 REGISTRY_URL="docker.io"
 REPOSITORY_PATH="matrixdj96"
 
@@ -16,32 +18,32 @@ if [ "${1}" = "--docker-install" ]; then
 	bash --login "$(pwd)/config/provision/docker.sh" --ubuntu
 elif [ "${1}" = "--docker-build" ]; then
 	# Build base image
-	docker image rm -f local/rhel9-init >/dev/null 2>&1
-	docker build --security-opt label=disable --load \
+	"${ENGINE}" image rm -f local/rhel9-init >/dev/null 2>&1
+	"${ENGINE}" build --security-opt label=disable --load \
 		-t local/rhel9-init \
 		. 2>&1 | tee build.log
 elif [ "${1}" = "--docker-export" ]; then
 	# Create tmp container
-	docker rm -f rhel9 >/dev/null 2>&1
-	docker run -t -d -v "$(pwd):/vagrant" --name rhel9 local/rhel9-init bash
+	"${ENGINE}" rm -f rhel9 >/dev/null 2>&1
+	"${ENGINE}" run -t -d -v "$(pwd):/vagrant" --name rhel9 local/rhel9-init bash
 
 	# Configure container for WSL
 	if [ "${2}" = "--wsl" ]; then
-		docker exec -t rhel9 /vagrant/config/extra/env_toolkit.sh --wsl-export
+		"${ENGINE}" exec -t rhel9 /vagrant/config/extra/env_toolkit.sh --wsl-export
 	fi
 
 	# Export image
-	docker export rhel9 >RHEL9.wsl
-	docker rm -f rhel9 >/dev/null 2>&1
+	"${ENGINE}" export rhel9 >RHEL9.wsl
+	"${ENGINE}" rm -f rhel9 >/dev/null 2>&1
 elif [ "${1}" = "--docker-pull" ]; then
   # Pull RHEL9 image
-  docker pull "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
-  docker tag "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest" local/rhel9-init
+  "${ENGINE}" pull "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
+  "${ENGINE}" tag "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest" local/rhel9-init
 elif [ "${1}" = "--docker-push" ]; then
   # Push RHEL9 image
-  docker login "${REGISTRY_URL}"
-  docker tag local/rhel9-init "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
-  docker push "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
+  "${ENGINE}" login "${REGISTRY_URL}"
+  "${ENGINE}" tag local/rhel9-init "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
+  "${ENGINE}" push "${REGISTRY_URL}/${REPOSITORY_PATH}/rhel9-init:latest"
 elif [ "${1}" = "--wsl-export" ]; then
 	# Unmask system services
 	systemctl unmask \
